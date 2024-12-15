@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Compression and Decompression</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .box {
+      width: 300px;
+      padding: 20px;
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .box h3 {
+      margin-bottom: 20px;
+      color: #3498db;
+    }
+
+    .file-input {
+      margin-bottom: 15px;
+    }
+
+    .file-input input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .upload-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .upload-btn:hover {
+      background-color: #2874a6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Compression Box -->
+    <div class="box">
+      <h3>Upload File for Compression</h3>
+      <div class="file-input">
+        <input type="file" id="fileInput" accept=".txt, .bin">
+      </div>
+      <button onclick="handlefile()">Compress</button>
+    </div>
+
+    <!-- Decompression Box -->
+    <div class="box">
+      <h3>Upload File for Decompression</h3>
+      <div class="file-input">
+        <input type="file" id="fileInput" accept=".txt, .bin">
+      </div>
+      <button onclick="handlefile()">Decompress</button>
+    </div>
+  </div>
+  <script>
+    function handleFile() {
+        const fileInput = document.getElementById("fileInput");
+        const outputMessage = document.getElementById("outputMessage");
+
+        if (!fileInput.files.length) {
+            outputMessage.textContent = "Please select a file.";
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const content = reader.result;
+
+            if (file.name.endsWith(".txt")) {
+                // Compress the text file
+                const compressed = simpleCompress(content);
+                downloadFile(compressed, file.name.replace(".txt", ".bin"));
+                outputMessage.textContent = "File compressed successfully!";
+            } else if (file.name.endsWith(".bin")) {
+                // Decompress the binary file
+                const decompressed = simpleDecompress(content);
+                downloadFile(decompressed, file.name.replace(".bin", "_decompressed.txt"));
+                outputMessage.textContent = "File decompressed successfully!";
+            } else {
+                outputMessage.textContent = "Unsupported file type.";
+            }
+        };
+
+        reader.onerror = () => {
+            outputMessage.textContent = "Failed to read the file.";
+        };
+
+        reader.readAsText(file);
+    }
+
+    function simpleCompress(text) {
+        let compressed = "";
+        let count = 1;
+
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === text[i + 1]) {
+                count++;
+            } else {
+                compressed += text[i] + (count > 1 ? count : "");
+                count = 1;
+            }
+        }
+
+        return compressed;
+    }
+
+    function simpleDecompress(compressedText) {
+        let decompressed = "";
+        for (let i = 0; i < compressedText.length; i++) {
+            if (isNaN(compressedText[i + 1])) {
+                decompressed += compressedText[i];
+            } else {
+                let count = parseInt(compressedText[i + 1]);
+                decompressed += compressedText[i].repeat(count);
+                i++;
+            }
+        }
+        return decompressed;
+    }
+
+    function downloadFile(content, fileName) {
+        const blob = new Blob([content], { type: "text/plain" });
+        const downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = fileName;
+        downloadLink.click();
+    }
+</script>
+ 
+</body>
+</html>
+
+
